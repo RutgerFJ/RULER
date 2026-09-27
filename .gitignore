@@ -11,6 +11,10 @@ __pycache__/
 .env.local
 .env.*.local
 
+*.egg-info/
+.coverage
+htmlcov/
+
 # Database
 db.sqlite3
 *.db
@@ -29,7 +33,21 @@ Thumbs.db
 mlva/staticfiles/
 /media/
 /venv/
+.venv/
+
+# Node / frontend tooling
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+*.map
 
 # Tailwind / DaisyUI
 tailwindcss
+output.css
 core/static/css/output.css

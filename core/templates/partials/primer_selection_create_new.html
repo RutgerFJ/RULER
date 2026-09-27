@@ -1,0 +1,67 @@
+<!-- Create New Locus Set -->
+<div id="create-new-method" class="space-y-6">
+    <!-- Locus Set Name -->
+    <div class="fieldset">
+        <legend class="fieldset-legend">
+            <span class="label-text font-semibold">Locus Set Name *</span>
+        </legend>
+        {{ form.new_locus_set_name }}
+        {% if form.new_locus_set_name.errors %}
+            <div class="alert alert-error mt-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    {% for error in form.new_locus_set_name.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Description -->
+    <div class="fieldset">
+        <legend class="fieldset-legend">
+            <span class="label-text font-semibold">Description *</span>
+        </legend>
+        {{ form.new_locus_set_description }}
+        {% if form.new_locus_set_description.errors %}
+            <div class="alert alert-error mt-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    {% for error in form.new_locus_set_description.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Primer FASTA File -->
+    <div class="fieldset">
+        <legend class="fieldset-legend">
+            <span class="label-text font-semibold">Primer FASTA File *</span>
+        </legend>
+        {{ form.new_locus_set_primers }}
+        {% if form.new_locus_set_primers.errors %}
+            <div class="alert alert-error mt-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    {% for error in form.new_locus_set_primers.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        <div class="mt-4">
+            <p class="font-semibold">Format:</p>
+            <p class="font-normal text-sm">
+                <code>
+                    &gt;LocusNameF RepeatSeq [Length]<br>
+                    ForwardPrimerSequence<br>
+                    &gt;LocusNameR RepeatSeq [Length]<br>
+                    ReversePrimerSequence
+                </code>
+            </p>
+        </div>
+    </div>
+</div>

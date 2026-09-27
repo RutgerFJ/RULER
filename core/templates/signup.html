@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}RULER | Sign up{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center p-8">
+    <div class="card border-[1px] border-base-300 bg-base-100 shadow-2xl w-full max-w-md">
+        <div class="card-body">
+            <div class="flex justify-center py-6">
+                <img src="{% static 'icons/logo.png' %}" alt="Repeat Unit Loci Evaluator for Relatedness" width="160px" height="160px">
+            </div>
+
+            <h2 class="card-title text-center text-2xl font-bold mb-2">Sign up</h2>
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m2-2l2 2m-2-2l-2-2"/>
+                    </svg>
+                    <div>
+                        {% for error in form.non_field_errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            <form method="post" novalidate class="space-y-4">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                    {% if field.name not in 'password1|password2' %}
+                        <fieldset class="fieldset">
+                            <legend class="fieldset-legend">
+                                <span class="label-text">{{ field.label }}</span>
+                            </legend>
+                            <input 
+                                type="text"
+                                name="{{ field.name }}"
+                                placeholder="{{ field.label }}"
+                                class="input input-bordered w-full"
+                                {% if field.value %}value="{{ field.value }}"{% endif %}
+                            />
+                            {% if field.errors %}
+                                <label class="label">
+                                    <span class="text-error">
+                                        {% for error in field.errors %}{{ error }}{% endfor %}
+                                    </span>
+                                </label>
+                            {% endif %}
+                        </fieldset>
+                    {% endif %}
+                {% endfor %}
+                
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">
+                        <span class="label-text">{{ form.password1.label }}</span>
+                    </legend>
+                    <input 
+                        type="password"
+                        name="password1"
+                        placeholder="Password"
+                        class="input input-bordered w-full"
+                    />
+                    {% if form.password1.errors %}
+                        <label class="label">
+                            <span class="text-error">
+                                {% for error in form.password1.errors %}{{ error }}{% endfor %}
+                            </span>
+                        </label>
+                    {% endif %}
+                </fieldset>
+                
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">
+                        <span class="label-text">{{ form.password2.label }}</span>
+                    </legend>
+                    <input 
+                        type="password"
+                        name="password2"
+                        placeholder="Confirm Password"
+                        class="input input-bordered w-full"
+                    />
+                    {% if form.password2.errors %}
+                        <label class="label">
+                            <span class="text-error">
+                                {% for error in form.password2.errors %}{{ error }}{% endfor %}
+                            </span>
+                        </label>
+                    {% endif %}
+                    </fieldset>
+                
+                <button type="submit" class="btn btn-primary w-full text-white font-semibold">
+                    Sign Up
+                </button>
+            </form>
+            
+            <div class="divider">OR</div>
+            
+            <p class="text-center text-sm">
+                Already have an account? 
+                <a href="{% url 'login' %}" class="link link-primary font-semibold">Log in here</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,146 @@
+/* D3 SVG-specific styles that can't be replicated with Tailwind/DaisyUI */
+
+/* SVG displays as block to remove baseline spacing bugs */
+#mst {
+    display: block;
+    cursor: grab;
+}
+
+#mst:active {
+    cursor: grabbing;
+}
+
+/* Fullscreen container */
+#mst-container:fullscreen {
+    width: 100vw;
+    height: 100vh;
+    background: white;
+    margin-top: 0;
+}
+
+#mst-container:fullscreen #mst {
+    width: 100%;
+    height: 100%;
+}
+
+/* Safari support */
+#mst-container:-webkit-full-screen {
+    width: 100vw;
+    height: 100vh;
+    background: white;
+    margin-top: 0;
+}
+
+#mst-container:-webkit-full-screen #mst {
+    width: 100%;
+    height: 100%;
+}
+.node text {
+    font-size: 11px;
+    font-weight: bold;
+    fill: #000000;
+    pointer-events: none;
+    text-shadow: 0 1px 2px #ffffff, 0 -1px 2px #ffffff, 1px 0 2px #ffffff, -1px 0 2px #ffffff;
+}
+
+/* Core Edge Layout Vector Weights */
+.link {
+    stroke: #000;
+    stroke-opacity: 0.95;
+}
+
+/* STRD == 0: Identical Profiles (The Fattest & Darkest) */
+.link.idv {
+    stroke-width: 6px;
+}
+
+/* STRD == 1: Single Locus Variant */
+.link.slv {
+    stroke-width: 4px;
+}
+
+/* STRD == 2: Double Locus Variant */
+.link.dlv {
+    stroke-width: 2.5px;
+}
+
+/* STRD == 3: Triple Locus Variant */
+.link.tlv {
+    stroke-width: 1.5px;
+}
+
+/* Distant Variants (STRD > 3) */
+.link.subvariant {
+    stroke-width: 1px;
+    stroke-dasharray: 2, 2; /* Dotted line to show weak connection */
+}
+
+/* Dimmed state when clustering algorithms highlight specific links */
+.link.dimmed {
+    stroke-opacity: 0.15;
+    stroke-width: 0.75px;
+}
+
+.weight-label-bg {
+    fill: #ffffcc;
+    stroke: #666666;
+    stroke-width: 0.75px;
+    rx: 2;
+    ry: 2;
+}
+
+.weight-label-text {
+    font-size: 10px;
+    fill: #000000;
+    font-family: monospace;
+    font-weight: bold;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+.tooltip {
+    position: absolute;
+    background: #ffffff;
+    border: 1px solid #555555;
+    padding: 6px 10px;
+    border-radius: 2px;
+    pointer-events: none;
+    font-size: 11px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    color: #000000;
+    z-index: 200;
+}
+/* Base shape outline styling */
+.node-shape {
+    stroke: #fff;
+    stroke-width: 1.5px;
+    transition: stroke 0.2s ease, stroke-width 0.2s ease, stroke-dasharray 0.2s ease;
+}
+
+/* Position Manually Adjusted (Pinned Nodes) - Dashed Border */
+.node.pinned .node-shape {
+    stroke: #d97706 !important; /* Amber/Orange border */
+    stroke-width: 3px !important;
+    /* 6px dash, 4px empty space */
+    stroke-dasharray: 6, 4 !important; 
+}
+
+/* Active Selection Border - Dotted Border */
+.node.selected .node-shape {
+    stroke: #1e3a8a !important; /* Deep Blue border */
+    stroke-width: 3px !important;
+    /* 2px dot, 3px empty space */
+    stroke-dasharray: 2, 3 !important; 
+}
+
+/* If a node is BOTH selected and pinned - Alternating Pattern */
+.node.selected.pinned .node-shape {
+    stroke: #b45309 !important; /* Darker amber */
+    stroke-width: 3.5px !important;
+    /* Longer dashes mixed with dots to differentiate */
+    stroke-dasharray: 8, 4, 2, 4 !important; 
+}
+
+.cluster-bubble-hull {
+    transition: stroke-width 0.15s ease, fill-opacity 0.15s ease;
+}

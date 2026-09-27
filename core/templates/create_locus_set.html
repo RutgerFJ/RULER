@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}RULER | Create Locus Set{% endblock %}
+
+{% block header %}
+Create Locus Set
+{% endblock %}
+
+{% block content %}
+<div class="p-8">
+    
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-base-content">Create Locus Set</h1>
+    </div>
+    
+    <div class="bg-base-100 border-base-300 border-[1px] shadow-sm rounded-xl p-8">
+
+        <!-- Progress Bar -->
+        <div class="mb-8">
+            <progress class="progress progress-primary w-full" value="{{ progress_percent }}" max="100"></progress>
+            
+            <!-- Step Indicators -->
+            <div class="flex justify-between mt-4 gap-2">
+                <div class="flex-1">
+                    <div class="flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-full 
+                                    {% if step >= 1 %}bg-primary text-primary-content
+                                    {% else %}bg-base-300 text-base-content/50
+                                    {% endif %} flex items-center justify-center font-bold mb-1">1</div>
+                        <span class="text-xs text-center">Details</span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <div class="flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-full 
+                                    {% if step >= 2 %}bg-primary text-primary-content
+                                    {% else %}bg-base-300 text-base-content/50
+                                    {% endif %} flex items-center justify-center font-bold mb-1">2</div>
+                        <span class="text-xs text-center">Primers</span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <div class="flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-full 
+                                    {% if step >= 3 %}bg-primary text-primary-content
+                                    {% else %}bg-base-300 text-base-content/50
+                                    {% endif %} flex items-center justify-center font-bold mb-1">3</div>
+                        <span class="text-xs text-center">Review</span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <div class="flex flex-col items-center">
+                        <div class="w-10 h-10 rounded-full 
+                                    {% if step == 4 %}bg-primary text-primary-content
+                                    {% else %}bg-base-300 text-base-content/50
+                                    {% endif %} flex items-center justify-center font-bold mb-1">4</div>
+                        <span class="text-xs text-center">Complete</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 1: Locus Set Details -->
+        {% if step == 1 %}
+            <div class="alert alert-info alert-soft mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Enter a name and description for your locus set. These help identify the primer scheme.</span>
+            </div>
+
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                
+                <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+                    <!-- Name Field -->
+                    <legend class="fieldset-legend">
+                        <span class="label-text font-semibold">Locus Set Name *</span>
+                    </legend>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <label class="label">
+                            <span class="text-error">{{ form.name.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                    
+                    <!-- Description Field -->
+                    <legend class="fieldset-legend">
+                        <span class="label-text font-semibold">Description</span>
+                    </legend>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <label class="label">
+                            <span class="text-error">{{ form.description.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </fieldset>
+
+                <!-- Buttons -->
+                <div class="flex justify-between gap-4 mt-8">
+                    <a href="{% url 'locus_sets' %}" class="btn btn-outline flex-1">Cancel</a>
+                    <button type="submit" class="btn btn-primary flex-1">Next: Upload Primers</button>
+                </div>
+            </form>
+
+        <!-- Step 2: Upload Primers -->
+        {% elif step == 2 %}
+            <div class="mb-6 p-4 bg-base-100 rounded-lg border border-base-300">
+                <p class="text-base-content/70">Locus set: <span class="font-semibold">{{ locus_set_name }}</span></p>
+            </div>
+
+            <div class="alert alert-info alert-soft mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Upload a FASTA file containing your primer sequences.</span>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                
+                <!-- Hidden fields for form validation -->
+                <input type="hidden" name="name" value="{{ locus_set_name }}">
+                <input type="hidden" name="description" value="{{ locus_set_description }}">
+                
+                <!-- Primer File Field -->
+                <div class="fieldset">
+                    <legend class="fieldset-legend">
+                        <span class="label-text font-semibold">Primer FASTA File *</span>
+                    </legend>
+                    {{ form.primer_fasta_file }}
+                    {% if form.primer_fasta_file.errors %}
+                        <div class="alert alert-error mt-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <div>
+                                {% for error in form.primer_fasta_file.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="mt-4">
+                        <p class="font-semibold">Expected Format:</p>
+                        <div class="bg-base-200 p-3 rounded text-sm font-mono text-base-content/70">
+                            &gt;LocusNameF RepeatSeq<br>
+                            FORWARD_PRIMER_SEQUENCE<br>
+                            &gt;LocusNameR RepeatSeq<br>
+                            REVERSE_PRIMER_SEQUENCE<br>
+                            &gt;LocusName2F RepeatSeq<br>
+                            FORWARD_PRIMER_SEQUENCE<br>
+                            &gt;LocusName2R RepeatSeq<br>
+                            REVERSE_PRIMER_SEQUENCE
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loci Display (shown after successful upload) -->
+                {% if loci %}
+                    <div class="bg-base-200 p-4 rounded-lg border border-base-300">
+                        <p class="text-sm font-semibold text-base-content mb-3">Detected Loci:</p>
+                        <div class="flex flex-wrap gap-2">
+                            {% for locus in loci %}
+                                <span class="badge badge-primary">{{ locus }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Buttons -->
+                <div class="flex justify-between gap-4 mt-8">
+                    <button type="submit" name="action" value="back" class="btn btn-outline flex-1">Back</button>
+                    <button type="submit" class="btn btn-primary flex-1">Next: Review</button>
+                </div>
+            </form>
+
+        <!-- Step 3: Review & Confirm -->
+        {% elif step == 3 %}
+        <div class="space-y-6">
+            <div class="alert alert-info alert-soft mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Review the details below. Click "Create" to finalize the locus set.</span>
+            </div>
+
+            
+            <!-- Settings Summary -->
+            <div class="bg-base-100 p-6 rounded-lg border border-base-300 mb-6 space-y-4">
+                <div>
+                    <p class="text-sm text-base-content/70">Locus set</p>
+                    <p class="text-lg font-semibold">{{ locus_set_name }}</p>
+                </div>
+                <div class="divider my-2"></div>
+                <div>
+                    <p class="text-sm text-base-content/70">Description</p>
+                    <p class="text-lg font-semibold">{{ locus_set_description }}</p>
+                </div>
+                <div class="divider my-2"></div>
+                <div>
+                    <p class="text-sm text-base-content/70">Number of loci</p>
+                    <p class="text-lg font-semibold">{{ locus_count }}</p>
+                </div>
+                <div class="divider my-2"></div>
+                <div>
+                    <p class="text-sm text-base-content/70">Loci</p>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        {% for locus in loci %}
+                            <span class="badge badge-primary">{{ locus }}</span>
+                        {% empty %}
+                            <span class="text-base-content/50">No loci parsed</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            
+
+            <!-- Buttons -->
+            <div class="flex justify-between gap-4">
+                <form method="post" class="flex-1">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="back">
+                    <button type="submit" class="btn btn-outline w-full">Back</button>
+                </form>
+                <form method="post" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary w-full">Create Locus Set</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Step 4: Completion -->
+        {% elif step == 4 %}
+            <div class="alert alert-success mb-8">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <h3 class="font-bold">Success!</h3>
+                    <div class="text-sm">Your locus set has been created successfully.</div>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="card border-[1px] border-base-300 bg-base-100 p-4">
+                    <h3 class="font-semibold mb-2">Locus Set Name</h3>
+                    <p class="text-lg">{{ locus_set_name }}</p>
+                </div>
+                <div class="card border-[1px] border-base-300 bg-base-100 p-4">
+                    <h3 class="font-semibold mb-2">Number of Loci</h3>
+                    <p class="text-lg">{{ locus_count }}</p>
+                </div>
+            </div>
+
+            <!-- Loci Display -->
+            <div class="card border-[1px] border-base-300 bg-base-100 p-4 mb-8">
+                <h3 class="font-semibold mb-3">Loci</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for locus in loci %}
+                        <span class="badge badge-primary">{{ locus }}</span>
+                    {% empty %}
+                        <span class="text-base-content/50">No loci parsed</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                
+                <div class="flex gap-4 justify-center flex-wrap">
+                    <button type="submit" name="view_all" value="true" class="btn btn-outline flex-1">
+                        View Locus Sets
+                    </button>
+                    <button type="submit" name="create_another" value="true" class="btn btn-primary flex-1">
+                        Create Another
+                    </button>
+                </div>
+            </form>
+
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

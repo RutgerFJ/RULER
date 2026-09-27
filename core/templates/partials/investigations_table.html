@@ -1,0 +1,154 @@
+<div class="overflow-x-auto">
+    <table class="table table-sm table-zebra w-full">
+        <thead>
+            <tr class="border-b border-base-300">
+                <!-- Name Header -->
+                <th class="cursor-pointer hover:bg-base-200 transition-colors"
+                    hx-get="{% url 'investigations' %}"
+                    hx-vals='{"sort_by": "name", "sort_order": "{{ next_sort_orders.name }}", "search_name": "{{ search_name }}", "filter_status": "{{ filter_status }}", "filter_date_from": "{{ filter_date_from }}", "filter_date_to": "{{ filter_date_to }}"}'
+                    hx-target="#investigations-table"
+                    hx-swap="innerHTML swap:1s">
+                    <div class="flex items-center gap-2">
+                        Name
+                        {% if sort_by == "name" %}
+                            <span class="text-sm">{% if sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                        {% endif %}
+                    </div>
+                </th>
+
+                <!-- Created Header -->
+                <th class="cursor-pointer hover:bg-base-200 transition-colors"
+                    hx-get="{% url 'investigations' %}"
+                    hx-vals='{"sort_by": "created_at", "sort_order": "{{ next_sort_orders.created_at }}", "search_name": "{{ search_name }}", "filter_status": "{{ filter_status }}", "filter_date_from": "{{ filter_date_from }}", "filter_date_to": "{{ filter_date_to }}"}'
+                    hx-target="#investigations-table"
+                    hx-swap="innerHTML swap:1s">
+                    <div class="flex items-center gap-2">
+                        Created
+                        {% if sort_by == "created_at" %}
+                            <span class="text-sm">{% if sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                        {% endif %}
+                    </div>
+                </th>
+
+                <!-- Isolates Count Header (Sortable) -->
+                <th class="cursor-pointer hover:bg-base-200 transition-colors"
+                    hx-get="{% url 'investigations' %}"
+                    hx-vals='{"sort_by": "isolates", "sort_order": "{{ next_sort_orders.isolates }}", "search_name": "{{ search_name }}", "filter_status": "{{ filter_status }}", "filter_date_from": "{{ filter_date_from }}", "filter_date_to": "{{ filter_date_to }}"}'
+                    hx-target="#investigations-table"
+                    hx-swap="innerHTML swap:1s">
+                    <div class="flex items-center gap-2">
+                        Isolates
+                        {% if sort_by == "isolates" %}
+                            <span class="text-sm">{% if sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                        {% endif %}
+                    </div>
+                </th>
+
+                <!-- Analyses Count Header (Sortable) -->
+                <th class="cursor-pointer hover:bg-base-200 transition-colors"
+                    hx-get="{% url 'investigations' %}"
+                    hx-vals='{"sort_by": "analyses", "sort_order": "{{ next_sort_orders.analyses }}", "search_name": "{{ search_name }}", "filter_status": "{{ filter_status }}", "filter_date_from": "{{ filter_date_from }}", "filter_date_to": "{{ filter_date_to }}"}'
+                    hx-target="#investigations-table"
+                    hx-swap="innerHTML swap:1s">
+                    <div class="flex items-center gap-2">
+                        Analyses
+                        {% if sort_by == "analyses" %}
+                            <span class="text-sm">{% if sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                        {% endif %}
+                    </div>
+                </th>
+                
+                <!-- Status Header -->
+                <th class="cursor-pointer hover:bg-base-200 transition-colors"
+                    hx-get="{% url 'investigations' %}"
+                    hx-vals='{"sort_by": "status", "sort_order": "{{ next_sort_orders.status }}", "search_name": "{{ search_name }}", "filter_status": "{{ filter_status }}", "filter_date_from": "{{ filter_date_from }}", "filter_date_to": "{{ filter_date_to }}"}'
+                    hx-target="#investigations-table"
+                    hx-swap="innerHTML swap:1s">
+                    <div class="flex items-center gap-2">
+                        Status
+                        {% if sort_by == "status" %}
+                            <span class="text-sm">{% if sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                        {% endif %}
+                    </div>
+                </th>
+                
+                <!-- Role Header -->
+                <th class="cursor-pointer hover:bg-base-200 transition-colors"
+                    hx-get="{% url 'investigations' %}"
+                    hx-vals='{"sort_by": "role", "sort_order": "{{ next_sort_orders.role }}", "search_name": "{{ search_name }}", "filter_status": "{{ filter_status }}", "filter_date_from": "{{ filter_date_from }}", "filter_date_to": "{{ filter_date_to }}"}'
+                    hx-target="#investigations-table"
+                    hx-swap="innerHTML swap:1s">
+                    <div class="flex items-center gap-2">
+                        Role
+                        {% if sort_by == "role" %}
+                            <span class="text-sm">{% if sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                        {% endif %}
+                    </div>
+                </th>
+                <th>View</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user_inv in user_investigations %}
+                <tr>
+                    <!-- Name -->
+                    <td class="font-semibold">{{ user_inv.investigation.name }}</td>
+
+                    <!-- Date Created -->
+                    <td class="text-sm text-base-content/60">
+                        {{ user_inv.investigation.created_at|date:"M d, Y" }}
+                    </td>
+            
+                    <!-- Isolate Count -->
+                    <td>
+                        <div class="badge badge-neutral badge-outline badge-sm font-mono">
+                            {{ user_inv.isolates_count }}
+                        </div>
+                    </td>
+                    
+                    <!-- Analysis Count -->
+                    <td>
+                        <div class="badge badge-neutral badge-outline badge-sm font-mono">
+                            {{ user_inv.analyses_count }}
+                        </div>
+                    </td>
+
+                    <!-- Status -->
+                    <td>
+                        <div class="badge badge-outline 
+                            {% if user_inv.investigation.status == 'active' %}badge-success
+                            {% elif user_inv.investigation.status == 'completed' %}badge-info
+                            {% elif user_inv.investigation.status == 'paused' %}badge-warning
+                            {% elif user_inv.investigation.status == 'archived' %}badge-ghost
+                            {% endif %}">
+                            {{ user_inv.investigation.status }}
+                        </div>
+                    </td>
+
+                    <!-- User Role -->
+                    <td>
+                        <div class="badge badge-outline badge-primary">
+                            {{ user_inv.get_role_display }}
+                        </div>
+                    </td>
+
+                    <!-- View Button -->
+                    <td>
+                        <a href="{% url 'investigations_detail' investigation_id=user_inv.investigation.id %}" 
+                           class="btn btn-sm btn-primary btn-soft" 
+                           onclick="event.stopPropagation()">
+                            View
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <!-- Increased colspan to 7 to maintain layout boundary symmetry -->
+                    <td colspan="7" class="text-center">
+                        <p class="text-base-content/60">No investigations match your filter criteria.</p>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

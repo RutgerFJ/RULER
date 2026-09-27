@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}RULER | Settings{% endblock %}
+
+{% block content %}
+<div class="p-8">
+    <h1 class="text-4xl font-bold mb-8">Settings</h1>
+
+    <div class="card bg-base-100 shadow-md">
+        <div class="card-body">                
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <h3 class="text-xl font-semibold mb-4">Color Scheme</h3>
+                
+                <fieldset class="fieldset">
+                    <p class="text-sm text-base-content/70 mb-4">Choose a color scheme for analysis result visualizations.</p>
+                    
+                    <div class="space-y-3">
+                        {% for option in color_scheme_options %}
+                            <label class="label w-full cursor-pointer justify-start gap-3 p-3 border border-base-300 rounded-lg hover:bg-base-200 transition">
+                                <input 
+                                    type="radio" 
+                                    name="color_scheme" 
+                                    value="{{ option.key }}"
+                                    {% if option.selected %}checked{% endif %}
+                                    class="radio radio-primary"
+                                    onchange="this.form.submit()"
+                                />
+                                <div class="flex-1">
+                                    <div class="label-text">
+                                        <span class="font-semibold">{{ option.name }}</span>
+                                    </div>
+                                    <div class="mt-2 h-6 rounded border border-base-300" style="background: {{ option.gradient|safe }};"></div>
+                                </div>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if form.color_scheme.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">
+                                {% for error in form.color_scheme.errors %}{{ error }}{% endfor %}
+                            </span>
+                        </label>
+                    {% endif %}
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

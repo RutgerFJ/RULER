@@ -1,0 +1,10 @@
+<!-- Existing Primer Set Selection -->
+<div id="existing-method" class="fieldset">
+    <legend class="fieldset-legend">Select Primer Set *</legend>
+    {{ form.existing_primer_set }}
+    {% if form.existing_primer_set.errors %}
+        <label class="label">
+            <span class="text-error">{{ form.existing_primer_set.errors.0 }}</span>
+        </label>
+    {% endif %}
+</div>

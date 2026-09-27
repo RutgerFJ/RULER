@@ -1,0 +1,359 @@
+<!-- MLVA Pairwise Distance Matrix Tab -->
+<div class="space-y-4 mt-3" id="pairwise-container">
+    {% csrf_token %}
+    
+    {% if pairwise_data.matrix %}
+        <!-- Distance scale legend -->
+        <div class="">
+            <p class="text-sm font-semibold mb-2">Distance Scale:</p>
+            <div class="w-full h-6 rounded-full px-2 flex justify-between items-center text-xs font-mono" style="background: {{ pairwise_data.gradient|safe }};"><div class="badge badge-outline badge-xs bg-base-200">{{ pairwise_data.min_distance }}</div><div class="badge badge-outline badge-xs bg-base-200">{{ pairwise_data.max_distance }}</div></div>
+            <div class="py-2">Pairwise distances are marked with "*" when BLAST found the forward and reverse primers on different contigs for at least one of the contributing repeat counts. In these cases, it's possible that some repeats were missed during sequencing. Thus, the distance measured might be smaller than the actual distance.</div>
+        </div>
+        
+        <!-- Active Isolates Distance Matrix Table -->
+        <div>
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-semibold">Active Isolates</h3>
+                <button class="btn btn-sm btn-outline"
+                        hx-post="/api/mlva/{{ pairwise_data.mlva_config_id }}/toggle-all-active/"
+                        hx-vals="js:{active: false, tab: 'pairwise'}"
+                        hx-include="[name='csrfmiddlewaretoken']"
+                        hx-target="#pairwise-container"
+                        hx-swap="innerHTML swap:1s"
+                        title="Deactivate all isolates">
+                    Deactivate All
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="table table-sm border-collapse border border-base-300">
+                    <thead>
+                        <tr class="bg-base-200">
+                            <th class="border border-base-300 text-center font-semibold"></th>
+                            {% for header in pairwise_data.column_headers %}
+                                <th class="border border-base-300 text-center font-semibold text-xs h-32 px-1 py-2" style="writing-mode: vertical-rl; transform: rotate(180deg);" title="{{ header.name }}">
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ header.name|truncatechars:10 }}</span>
+                                        <input type="checkbox" 
+                                               class="checkbox checkbox-sm"
+                                               style="transform: rotate(180deg)"
+                                               hx-post="/api/isolates/{{ header.id }}/toggle-active/"
+                                               hx-vals="js:{active: this.checked, tab: 'pairwise'}"
+                                               hx-include="[name='csrfmiddlewaretoken']"
+                                               hx-target="#pairwise-container"
+                                               hx-swap="innerHTML swap:1s"
+                                               checked
+                                               title="Toggle isolate active status">
+                                    </div>
+                                </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in pairwise_data.matrix %}
+                            <tr>
+                                <td class="border border-base-300 font-semibold bg-base-100 text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" 
+                                               class="checkbox checkbox-sm" 
+                                               hx-post="/api/isolates/{{ row.isolate_id }}/toggle-active/"
+                                               hx-vals="js:{active: this.checked, tab: 'pairwise'}"
+                                               hx-include="[name='csrfmiddlewaretoken']"
+                                               hx-target="#pairwise-container"
+                                               hx-swap="innerHTML swap:1s"
+                                               checked
+                                               title="Toggle isolate active status">
+                                        <span>{{ row.isolate_name|truncatechars:15 }}</span>
+                                    </div>
+                                </td>
+                                {% for cell in row.distances %}
+                                    {% if cell.bg_color %}
+                                        <td class="border border-base-300 text-center text-sm" style="background-color: {{ cell.bg_color|safe }} !important; color: white !important; font-weight: {% if cell.marked %}bold{% else %}normal{% endif %} !important;">
+                                            {{ cell.value }}{% if cell.marked %}*{% endif %}
+                                        </td>
+                                    {% else %}
+                                        <td class="border border-base-300 text-center text-sm {{ cell.color_class }} {{ cell.text_class }}">
+                                            {{ cell.value }}
+                                        </td>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Inactive Isolates Table -->
+        {% if pairwise_data.inactive_rows %}
+        <div class="mt-8">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-semibold text-base-content/60">Inactive Isolates</h3>
+                <button class="btn btn-sm btn-outline"
+                        hx-post="/api/mlva/{{ pairwise_data.mlva_config_id }}/toggle-all-active/"
+                        hx-vals="js:{active: true, tab: 'pairwise'}"
+                        hx-include="[name='csrfmiddlewaretoken']"
+                        hx-target="#pairwise-container"
+                        hx-swap="innerHTML swap:1s"
+                        title="Activate all isolates">
+                    Activate All
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="table table-sm w-full opacity-60">
+                    <thead>
+                        <tr class="bg-base-300">
+                            <th class="text-sm w-8"></th>
+                            <th class="text-sm">Isolate</th>
+                            <th class="text-sm"><div>Sampling Location</div><div class="text-xs italic">Sampling Date</div></th>
+                            <th class="text-sm">Contigs</th>
+                            <th class="text-sm">Closest STRD</th>
+                            {% for header in pairwise_data.headers %}
+                                <th class="text-center text-xs">{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in pairwise_data.inactive_rows %}
+                        <tr class="bg-base-300/30">
+                            <td class="text-center">
+                                <input type="checkbox" 
+                                       class="checkbox checkbox-sm" 
+                                       hx-post="/api/isolates/{{ row.isolate_id }}/toggle-active/"
+                                       hx-vals="js:{active: this.checked, tab: 'pairwise'}"
+                                       hx-include="[name='csrfmiddlewaretoken']"
+                                       hx-target="#pairwise-container"
+                                       hx-swap="innerHTML swap:1s"
+                                       title="Toggle isolate active status">
+                            </td>
+                            <td class="font-semibold text-sm">{{ row.isolate }}</td>
+                            <td class="text-sm">
+                                <div>
+                                    {% if row.metadata.sampling_location %}
+                                        {{ row.metadata.sampling_location }}
+                                    {% else %}
+                                        <span class="text-base-content/40">-</span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-xs italic">
+                                    {% if row.metadata.sampling_date %}
+                                        {{ row.metadata.sampling_date }}
+                                    {% else %}
+                                        <span class="text-base-content/40">-</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="text-sm text-center font-mono">{{ row.metadata.contig_count }}</td>
+                            <td class="text-sm">
+                                {% if row.metadata.closest_strd.min_strd is not None %}
+                                    <details class="cursor-pointer">
+                                        <summary class="font-semibold hover:underline">
+                                            {{ row.metadata.closest_strd.min_strd }}
+                                        </summary>
+                                        <div class="mt-2 pl-4 text-xs border-l-2 border-base-300">
+                                            {% for isolate_name in row.metadata.closest_strd.closest_isolates %}
+                                                <div>{{ isolate_name }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </details>
+                                {% else %}
+                                    <span class="text-base-content/40">-</span>
+                                {% endif %}
+                            </td>
+                            {% for cell in row.values %}
+                            <td class="text-center text-sm p-0">
+                                {% if cell.value is not None %}
+                                    {% if cell.bg_color %}
+                                        <span class="font-mono block px-1 py-2 rounded text-white" style="background-color: {{ cell.bg_color|safe }} !important;">
+                                            {{ cell.value }}
+                                        </span>
+                                    {% elif cell.is_string %}
+                                        <span class="font-mono block px-1 py-2 rounded {{ cell.text_class }}">
+                                            {{ cell.value }}
+                                        </span>
+                                    {% else %}
+                                        <span class="font-mono block px-1 py-2 {{ cell.text_class }}">
+                                            {{ cell.value }}
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-base-content/40 block px-3 py-2">-</span>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <!-- Show inactive isolates when no active isolates exist -->
+        {% if pairwise_data.inactive_rows %}
+        <div class="mt-8">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-semibold text-base-content/60">Inactive Isolates</h3>
+                <button class="btn btn-sm btn-outline"
+                        hx-post="/api/mlva/{{ pairwise_data.mlva_config_id }}/toggle-all-active/"
+                        hx-vals="js:{active: true, tab: 'pairwise'}"
+                        hx-include="[name='csrfmiddlewaretoken']"
+                        hx-target="#pairwise-container"
+                        hx-swap="innerHTML swap:1s"
+                        title="Activate all isolates">
+                    Activate All
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="table table-sm w-full opacity-60">
+                    <thead>
+                        <tr class="bg-base-300">
+                            <th class="text-sm w-8"></th>
+                            <th class="text-sm cursor-pointer hover:bg-base-400 transition-colors"
+                                hx-get="{% url 'mlva_detail' investigation_id=pairwise_data.investigation_id mlva_config_id=pairwise_data.mlva_config_id %}"
+                                hx-vals='{"sort_by": "isolate", "sort_order": "{{ pairwise_data.next_sort_orders.isolate }}"}'
+                                hx-target="#pairwise-container"
+                                hx-swap="innerHTML swap:1s">
+                                <div class="flex items-center gap-2">
+                                    Isolate
+                                    {% if pairwise_data.sort_by == "isolate" %}
+                                        <span class="text-sm">{% if pairwise_data.sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                                    {% endif %}
+                                </div>
+                            </th>
+                            <th class="text-sm">
+                                <div class="cursor-pointer hover:bg-base-400 transition-colors"
+                                    hx-get="{% url 'mlva_detail' investigation_id=pairwise_data.investigation_id mlva_config_id=pairwise_data.mlva_config_id %}"
+                                    hx-vals='{"sort_by": "sampling_location", "sort_order": "{{ pairwise_data.next_sort_orders.sampling_location }}"}'
+                                    hx-target="#pairwise-container"
+                                    hx-swap="innerHTML swap:1s">
+                                    <div class="flex items-center gap-2">
+                                        Sampling Location
+                                        {% if pairwise_data.sort_by == "sampling_location" %}
+                                            <span class="text-sm">{% if pairwise_data.sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="cursor-pointer hover:bg-base-400 transition-colors text-xs italic"
+                                    hx-get="{% url 'mlva_detail' investigation_id=pairwise_data.investigation_id mlva_config_id=pairwise_data.mlva_config_id %}"
+                                    hx-vals='{"sort_by": "sampling_date", "sort_order": "{{ pairwise_data.next_sort_orders.sampling_date }}"}'
+                                    hx-target="#pairwise-container"
+                                    hx-swap="innerHTML swap:1s">
+                                    <div class="flex items-center gap-2">
+                                        Sampling Date
+                                        {% if pairwise_data.sort_by == "sampling_date" %}
+                                            <span class="text-sm">{% if pairwise_data.sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </th>
+                            <th class="text-sm cursor-pointer hover:bg-base-400 transition-colors"
+                                hx-get="{% url 'mlva_detail' investigation_id=pairwise_data.investigation_id mlva_config_id=pairwise_data.mlva_config_id %}"
+                                hx-vals='{"sort_by": "contig_count", "sort_order": "{{ pairwise_data.next_sort_orders.contig_count }}"}'
+                                hx-target="#pairwise-container"
+                                hx-swap="innerHTML swap:1s">
+                                <div class="flex items-center gap-2">
+                                    Contigs
+                                    {% if pairwise_data.sort_by == "contig_count" %}
+                                        <span class="text-sm">{% if pairwise_data.sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                                    {% endif %}
+                                </div>
+                            </th>
+                            <th class="text-sm cursor-pointer hover:bg-base-400 transition-colors"
+                                hx-get="{% url 'mlva_detail' investigation_id=pairwise_data.investigation_id mlva_config_id=pairwise_data.mlva_config_id %}"
+                                hx-vals='{"sort_by": "closest_strd", "sort_order": "{{ pairwise_data.next_sort_orders.closest_strd }}"}'
+                                hx-target="#pairwise-container"
+                                hx-swap="innerHTML swap:1s">
+                                <div class="flex items-center gap-2">
+                                    Closest STRD
+                                    {% if pairwise_data.sort_by == "closest_strd" %}
+                                        <span class="text-sm">{% if pairwise_data.sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                                    {% endif %}
+                                </div>
+                            </th>
+                            {% for header in pairwise_data.headers %}
+                                <th class="text-center text-xs">{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in pairwise_data.inactive_rows %}
+                        <tr class="bg-base-300/30">
+                            <td class="text-center">
+                                <input type="checkbox" 
+                                       class="checkbox checkbox-sm" 
+                                       hx-post="/api/isolates/{{ row.isolate_id }}/toggle-active/"
+                                       hx-vals="js:{active: this.checked, tab: 'pairwise'}"
+                                       hx-include="[name='csrfmiddlewaretoken']"
+                                       hx-target="#pairwise-container"
+                                       hx-swap="innerHTML swap:1s"
+                                       title="Toggle isolate active status">
+                            </td>
+                            <td class="font-semibold text-sm">{{ row.isolate }}</td>
+                            <td class="text-sm">
+                                <div>
+                                    {% if row.metadata.sampling_location %}
+                                        {{ row.metadata.sampling_location }}
+                                    {% else %}
+                                        <span class="text-base-content/40">-</span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-xs italic">
+                                    {% if row.metadata.sampling_date %}
+                                        {{ row.metadata.sampling_date }}
+                                    {% else %}
+                                        <span class="text-base-content/40">-</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="text-sm text-center font-mono">{{ row.metadata.contig_count }}</td>
+                            <td class="text-sm">
+                                {% if row.metadata.closest_strd.min_strd is not None %}
+                                    <details class="cursor-pointer">
+                                        <summary class="font-semibold hover:underline">
+                                            {{ row.metadata.closest_strd.min_strd }}
+                                        </summary>
+                                        <div class="mt-2 pl-4 text-xs border-l-2 border-base-300">
+                                            {% for isolate_name in row.metadata.closest_strd.closest_isolates %}
+                                                <div>{{ isolate_name }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </details>
+                                {% else %}
+                                    <span class="text-base-content/40">-</span>
+                                {% endif %}
+                            </td>
+                            {% for cell in row.values %}
+                            <td class="text-center text-sm p-0">
+                                {% if cell.value is not None %}
+                                    {% if cell.bg_color %}
+                                        <span class="font-mono block px-1 py-2 rounded text-white" style="background-color: {{ cell.bg_color|safe }} !important;">
+                                            {{ cell.value }}
+                                        </span>
+                                    {% elif cell.is_string %}
+                                        <span class="font-mono block px-1 py-2 rounded {{ cell.text_class }}">
+                                            {{ cell.value }}
+                                        </span>
+                                    {% else %}
+                                        <span class="font-mono block px-1 py-2 {{ cell.text_class }}">
+                                            {{ cell.value }}
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-base-content/40 block px-3 py-2">-</span>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-12 h-12 stroke-base-content/20 mb-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            <p class="text-base-content/70">No pairwise distances available. Ensure MLVA analysis has completed.</p>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>

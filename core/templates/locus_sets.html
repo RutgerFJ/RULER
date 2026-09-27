@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}RULER | Locus Sets{% endblock %}
+
+{% block content %}
+<div class="p-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <h1 class="text-4xl font-bold">Locus Sets</h1>
+        <a href="{% url 'create_locus_set' step=1 %}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Create New Locus Set
+        </a>
+    </div>
+
+    <!-- Filter/Search Bar -->
+    <div class="card bg-base-100 border-[1px] border-base-300 shadow-sm p-4 mb-6">
+        <form method="GET" action="{% url 'locus_sets' %}" class="flex gap-4 items-end">
+            
+            <!-- Maintain existing sort values if user filters -->
+            <input type="hidden" name="sort_by" value="{{ sort_by }}">
+            <input type="hidden" name="sort_order" value="{{ sort_order }}">
+
+            <!-- Name/Description Search -->
+            <div class="form-control w-full">
+                <label class="label py-1 text-xs font-semibold uppercase text-base-content/60">Search Name or Description</label>
+                <input type="text" name="search_name" value="{{ search_name }}" placeholder="Type name or description..." class="input input-bordered w-full input-sm focus:input-primary" />
+            </div>
+
+            <!-- Locus Name Search -->
+            <div class="form-control w-full">
+                <label class="label py-1 text-xs font-semibold uppercase text-base-content/60">Search Locus Name</label>
+                <input type="text" name="search_locus_name" value="{{ search_locus_name }}" placeholder="Type locus name..." class="input input-bordered w-full input-sm focus:input-primary" />
+            </div>
+
+            <!-- Number of Loci Filter -->
+            <div class="form-control w-full">
+                <label class="label py-1 text-xs font-semibold uppercase text-base-content/60">Number of Loci</label>
+                <input type="number" name="filter_loci_count" value="{{ filter_loci_count }}" placeholder="Enter count..." class="input input-bordered input-sm w-full focus:input-primary" min="0" />
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-1">
+                    Filter
+                </button>
+                <a href="{% url 'locus_sets' %}" class="btn btn-ghost btn-sm btn-outline border-base-300 flex-1">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Locus Sets Table -->
+    <div id="locus-sets-table" class="card border-[1px] border-base-300 bg-base-100 shadow-sm">
+        {% include "partials/locus_sets_table.html" %}
+    </div>
+</div>
+{% endblock %}

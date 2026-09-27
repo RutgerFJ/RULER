@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+<script src="{% static 'js/d3.v7.min.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/MST.css' %}"></link>
+{% endblock %}
+
+{% block content %}
+<div class="p-8">
+    <a href="/investigations/{{ mlva_config.investigation.id }}" class="btn btn-sm btn-ghost"><svg class="h-6 w-6 fill-current md:h-8 md:w-8 rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"></path></svg>Back to investigation</a>
+
+    <!-- Analysis Header -->
+    <h1 class="text-4xl font-bold mb-8 mt-2">Analysis</h1>
+
+    {% if progress.overall_progress == 100 %}
+        <!-- Analysis Complete: Show MLVA Results Tabs -->
+        <div class="card bg-base-100 border-[1px] border-base-300 shadow-sm">
+            <div class="card-body">
+                
+                <!-- Tab Navigation -->
+                <div class="tabs tabs-border" role="tablist">
+                    <input type="radio" name="mlva_tabs" role="tab" class="tab font-semibold" aria-label="MLVA Profiles" id="tab-profiles" checked="checked"/>
+                    <div role="tabpanel" class="tab-content">
+                        {% include 'partials/mlva_profiles_tab.html' %}
+                    </div>
+
+                    <input type="radio" name="mlva_tabs" role="tab" class="tab font-semibold" aria-label="Distance Matrix" id="tab-matrix" />
+                    <div role="tabpanel" class="tab-content">
+                        {% include 'partials/mlva_pairwise_matrix_tab.html' %}
+                    </div>
+
+                    <input type="radio" name="mlva_tabs" role="tab" class="tab font-semibold" aria-label="Tree View" id="tab-tree" />
+                    <div role="tabpanel" class="tab-content">
+                        {% include 'partials/mlva_tree_view_tab.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Analysis In Progress: Show Progress Tracker -->
+        <div id="progress-content" 
+            hx-get="/investigations/{{ mlva_config.investigation.id }}/mlva/{{ mlva_config.id }}/progress/" 
+            hx-trigger="every 5s"
+            hx-swap="innerHTML">
+            
+            {% include 'partials/mlva_progress_tracker.html' %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% load static %}
+
+<div id="mst-container" class="relative w-full h-full flex flex-row justify-start items-stretch mt-3" data-investigation-id="{{ investigation_id }}" data-mlva-config-id="{{ mlva_config_id }}">
+    <div id="mst-visualization" class="relative flex-grow flex flex-col w-3/4 pointer-events-none">
+        <svg id="mst" class="flex-grow w-full h-full bg-white pointer-events-auto">
+            <g class="zoom-group">
+                <g id="cluster-bubbles"></g>
+                <g id="links-group"></g>
+                <g id="edge-labels-group"></g>
+                <g id="nodes-group"></g>
+            </g>
+        </svg>
+        
+        <div class="controls-panel absolute top-4 left-4 z-20 flex flex-col gap-2 bg-base-200 p-3 rounded-lg shadow-xl border border-gray-300 pointer-events-auto">
+            <div class="flex gap-2 items-center">
+                <button class="btn btn-sm btn-outline" id="zoom-in" title="Zoom in">+</button>
+                <button class="btn btn-sm btn-outline" id="zoom-out" title="Zoom out">−</button>
+                <button class="btn btn-sm btn-outline" id="zoom-reset" title="Reset zoom">⟲</button>
+                <button class="btn btn-sm btn-outline" id="fullscreen-toggle" title="Toggle fullscreen">⛶</button>
+                <button class="btn btn-sm btn-info" id="zoom-layout-reset" title="Recalculate Mathematical Layout">Reset Layout</button>
+                <button class="btn btn-sm btn-success" id="export-clusters-csv" title="Export current clusters to CSV">Export CSV</button>
+            </div>
+            <div class="flex gap-2 items-center">
+                <label class="flex text-xs font-bold text-gray-700">Clustering:</label>
+                <select class="select select-sm select-bordered" id="cluster-algorithm">
+                    <option value="none">No Clustering</option>
+                    <option value="cc">Clonal Complexes (STRD ≤ 2)</option>
+                    <option value="gr">Genetically Related (STRD ≤ 10)</option>
+                    <option value="components">Connected Components (All Tree Links)</option>
+                </select>
+            </div>
+            <div class="flex gap-2 items-center">
+                <label class="text-xs font-bold text-gray-700" for="distance-cutoff">Max Allele Distance:</label>
+                <select class="select select-sm select-bordered" id="distance-cutoff">
+                    <option value="1">1 Locus Change (SLV)</option>
+                    <option value="2">2 Loci Changes (DLV)</option>
+                    <option value="3">3 Loci Changes (TLV)</option>
+                    <option value="5" selected>5 Loci Changes</option>
+                    <option value="999">Infinite (Full MST)</option>
+                </select>
+            </div>
+            <div class="flex gap-2 items-center">
+            <label class="text-xs font-bold text-gray-700" for="tree-algorithm">Tree Algorithm:</label>
+                <select class="select select-sm select-bordered" id="tree-algorithm">
+                    <option value="kruskal" selected>Kruskal (Standard MST)</option>
+                    <option value="prim">Prim (Rooted Outbreak Tree)</option>
+                    <option value="single-linkage">Single-linkage Network</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div id="node-sidebar" class="w-1/4 bg-gray-50 border-l border-gray-200 overflow-y-auto p-4 flex flex-col empty">
+        <div class="text-gray-400 text-sm text-center">Click on an isolate node to view details</div>
+        <div id="inactive-panel" class="absolute bottom-2.5 left-2.5 w-80 max-h-96 bg-white/95 border border-gray-300 rounded shadow-md flex flex-col z-[100] hidden">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-100">
+                <div class="font-semibold text-gray-900 text-sm">Inactive Isolates</div>
+                <button class="btn btn-ghost btn-xs" id="close-inactive-panel">✕</button>
+            </div>
+            <div id="inactive-panel-content" class="flex-1 overflow-y-auto p-3">
+                <div class="text-center text-gray-400 text-sm py-5">Loading...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/MST.js' %}"></script>

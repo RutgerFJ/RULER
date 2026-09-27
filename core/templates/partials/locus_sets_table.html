@@ -1,0 +1,89 @@
+<div class="overflow-x-auto">
+    <table class="table table-sm table-zebra w-full">
+        <thead>
+            <tr class="border-b border-base-300">
+                <!-- Name Header (Sortable) -->
+                <th class="cursor-pointer hover:bg-base-200 transition-colors"
+                    hx-get="{% url 'locus_sets' %}"
+                    hx-vals='{"sort_by": "name", "sort_order": "{{ next_sort_orders.name }}", "search_name": "{{ search_name }}", "search_locus_name": "{{ search_locus_name }}", "filter_loci_count": "{{ filter_loci_count }}"}'
+                    hx-target="#locus-sets-table"
+                    hx-swap="innerHTML swap:1s">
+                    <div class="flex items-center gap-2">
+                        Name
+                        {% if sort_by == "name" %}
+                            <span class="text-sm">{% if sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                        {% endif %}
+                    </div>
+                </th>
+
+                <!-- Description Header -->
+                <th>Description</th>
+
+                <!-- Number of Loci Header (Sortable) -->
+                <th class="cursor-pointer hover:bg-base-200 transition-colors"
+                    hx-get="{% url 'locus_sets' %}"
+                    hx-vals='{"sort_by": "loci_count", "sort_order": "{{ next_sort_orders.loci_count }}", "search_name": "{{ search_name }}", "search_locus_name": "{{ search_locus_name }}", "filter_loci_count": "{{ filter_loci_count }}"}'
+                    hx-target="#locus-sets-table"
+                    hx-swap="innerHTML swap:1s">
+                    <div class="flex items-center gap-2">
+                        Number of Loci
+                        {% if sort_by == "loci_count" %}
+                            <span class="text-sm">{% if sort_order == "desc" %}↓{% else %}↑{% endif %}</span>
+                        {% endif %}
+                    </div>
+                </th>
+
+                <!-- Loci Header -->
+                <th>Loci</th>
+
+                <!-- View Header -->
+                <th>View</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if locus_sets %}
+            {% for locus_set in locus_sets %}
+                <tr>
+                    <!-- Name -->
+                    <td class="font-semibold">{{ locus_set.name }}</td>
+
+                    <!-- Description -->
+                    <td>{{ locus_set.description }}</td>
+
+                    <!-- Number of Loci -->
+                    <td>
+                        <span class="badge badge-neutral badge-outline">{{ locus_set.loci_count }}</span>
+                    </td>
+
+                    <!-- Loci -->
+                    <td>
+                        <div class="flex flex-wrap gap-2">
+                            {% for locus in locus_set.loci_list %}
+                                <span class="badge badge-primary badge-soft">{{ locus }}</span>
+                            {% empty %}
+                                <span class="text-base-content/50 text-sm">No loci</span>
+                            {% endfor %}
+                        </div>
+                    </td>
+
+                    <!-- Actions -->
+                    <td>
+                        <div class="flex gap-2">
+                            <a href="{% url 'locus_set_detail' locus_set.id %}" class="btn btn-sm btn-primary btn-soft" title="View">
+                                View
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <!-- Increased colspan to 7 to maintain layout boundary symmetry -->
+                <td colspan="5" class="text-center">
+                    <p class="text-base-content/60">No locus sets match your filter criteria.</p>
+                </td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>

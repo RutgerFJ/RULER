@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RULER{% endblock %}</title>
+
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'icons/favicon.png' %}">
+
+    <!-- TailwindCSS & DaisyUI -->
+    <link href="{% static 'css/output.css' %}" rel="stylesheet" type="text/css">
+
+    <!-- HTMX -->
+    <script src="{% static 'js/htmx@2.0.10.js' %}"></script>
+
+    {% block head %}{% endblock %}
+</head>
+
+<body class="flex flex-col bg-base-200 min-h-[100vh]">
+    {% if request.user.is_authenticated %}
+        {% block navbar %}
+        <header class="sticky z-50 top-0 flex items-center justify-between border-b border-base-300 bg-base-100 shadow-sm px-6 py-1">
+            <div class="flex">
+                <img src="{% static 'icons/logo.png' %}" alt="Repeat Unit Loci Evaluator for Relatedness" width="97px" height="47px">
+                <ul class="menu menu-horizontal menu-lg gap-2 px-6">
+                    <li {% if active_section == 'investigations' %}class="menu-active rounded-sm"{% endif %}>
+                        <a href="{% url 'investigations' %}" class="text-base">
+                            <img src="{% static 'icons/list-bullet.svg' %}" class="h-5 w-5 {% if active_section == 'investigations' %}invert{% endif %}">
+                            Investigations
+                        </a>
+                    </li>
+                    <li {% if active_section == 'locus_sets' %}class="menu-active rounded-sm"{% endif %}>
+                        <a href="{% url 'locus_sets' %}" class="text-base">
+                            <img src="{% static 'icons/map-pin.svg' %}" class="h-5 w-5 {% if active_section == 'locus_sets' %}invert{% endif %}">
+                            Locus sets
+                        </a>
+                    </li>
+                    <li {% if active_section == 'settings' %}class="menu-active rounded-sm"{% endif %}>
+                        <a href="{% url 'settings' %}" class="text-base">
+                            <img src="{% static 'icons/cog.svg' %}" class="h-5 w-5 {% if active_section == 'settings' %}invert{% endif %}">
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <ul class="menu menu-horizontal">
+                <li>
+                    <a href="{% url 'logout' %}" class="text-base">
+                        <img src="{% static 'icons/logout.svg' %}" class="h-5 w-5">
+                        Log out
+                    </a>
+                </li>
+            </ul>
+        </header>
+        {% endblock %}
+    {% endif %}
+
+    <main class="relative">
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>

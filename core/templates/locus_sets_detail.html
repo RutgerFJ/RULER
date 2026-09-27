@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ locus_set.name }} | Locus Set{% endblock %}
+
+{% block content %}
+<div class="p-8">
+    <a href="/locus-sets" class="btn btn-sm btn-ghost"><svg class="h-6 w-6 fill-current md:h-8 md:w-8 rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"></path></svg>Back to locus sets</a>
+
+    <h1 class="text-4xl font-bold mb-8 mt-2">{{ locus_set.name }}</h1>
+
+    <!-- Locus Set Details -->
+    <div class="grid grid-cols-3 gap-6">
+        <!-- Summary Card -->
+        <div class="card card-border bg-base-100 shadow-sm col-span-1">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Summary</h2>
+                
+                <div class="flex gap-4">
+
+                    <!-- Description -->
+                    <div>
+                        <p class="text-base-content/70 text-sm">Description</p>
+                        <p class="font-semibold">{{ locus_set.description }}</p>
+                    </div>
+
+                    <!-- Locus Count -->
+                    <div>
+                        <p class="text-base-content/70 text-sm">Total Loci</p>
+                        <p class="font-semibold">{{ loci_count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loci Table Section -->
+        <div class="card card-border bg-base-100 shadow-sm col-span-2">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Loci</h2>
+                {% include "partials/loci_table.html" %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

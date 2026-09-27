@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bio_filters %}
+
+{% block title %}Investigation - {{ investigation.name }}{% endblock %}
+
+{% block content %}
+<div class="p-8">
+    <a href="/investigations" class="btn btn-sm btn-ghost"><svg class="h-6 w-6 fill-current md:h-8 md:w-8 rtl:rotate-180" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"></path></svg>Back to investigations</a>
+
+    <!-- Investigation Header -->
+    <h1 class="text-4xl font-bold mt-2 mb-8">{{ investigation.name }}</h1>
+
+    <div class="flex flex-row no-wrap w-[screen - 6 * 2] gap-6 mb-6 px-8 box-border">
+        <div class="card card-border bg-base-100 shadow-sm flex-1 min-w-0">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Investigation</h2>
+                
+                <div class="flex flex-col gap-4">
+                    {% if investigation.description %}
+                        <div>
+                            <p class="text-base-content/70 text-sm font-medium">Description</p>
+                            <p class="font-semibold">{{ investigation.description }}</p>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <p class="text-base-content/70 text-sm font-medium">Created</p>
+                        <p class="font-semibold">{{ investigation.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-base-content/70 text-sm font-medium">Your Role</p>
+                        <p class="font-semibold">{{ user_investigation.get_role_display }}</p>
+                    </div>
+                    <div>
+                        <p class="text-base-content/70 text-sm font-medium">Isolates</p>
+                        <p class="font-semibold">{{ num_isolates }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-border bg-base-100 shadow-sm flex-1 min-w-0">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Assembly statistics</h2>
+                
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <p class="text-base-content/70 text-sm font-medium">Avg. contigs</p>
+                        <p class="font-semibold">
+                            {{ stats.avg_contigs|floatformat:1|default:"0" }} 
+                            <span class="text-base-content/50 text-sm font-normal">
+                                (±{{ stats.std_contigs|floatformat:1|default:"0" }})
+                            </span>
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-base-content/70 text-sm font-medium">Avg. assembly size</p>
+                        <p class="font-semibold">
+                            {{ stats.avg_size|human_bp }}
+                            {% if stats.std_size %}
+                                <span class="text-base-content/50 text-sm font-normal">
+                                    (±{{ stats.std_size|human_bp }})
+                                </span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-base-content/70 text-sm font-medium">Avg. N50</p>
+                        <p class="font-semibold">
+                            {{ stats.avg_n50|human_bp }}
+                            {% if stats.std_n50 %}
+                                <span class="text-base-content/50 text-sm font-normal">
+                                    (±{{ stats.std_n50|human_bp }})
+                                </span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-border bg-base-100 shadow-sm flex-1 min-w-content">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Analyses</h2>
+                
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra w-full">
+                        <thead class="text-left">
+                            <tr>
+                                <th>Count mode</th>
+                                <th>Locus set</th>
+                                <th>Completion</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if mlva_configs %}
+                                {% for config in mlva_configs %}
+                                    <tr>
+                                        <td>{{ config.count_mode|capfirst }}</td>
+                                        <td>{{ config.locus_set }}</td>
+                                        <td>{{ config.completion }}</td>
+                                        <td class="text-end"><a href="/investigations/{{ investigation.id }}/mlva/{{ config.id }}" class="btn btn-primary btn-soft">View</a></td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="space-y-2 mt-4">
+                    <a href="{% url 'create_mlvaconfig' investigation.id %}" class="btn btn-primary w-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                            fill="none" viewBox="0 0 24 24" 
+                            stroke-width="1.5" 
+                            stroke="oklch(0.93 0.034 272.788)" 
+                            class="size-6">
+                            <path stroke-linecap="round" 
+                                stroke-linejoin="round" 
+                                d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Create analysis
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Isolates Section -->
+    <div class="card card-border bg-base-100 shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title text-xl mb-4">
+                Isolates
+            </h2>
+            
+            {% if isolates %}
+                <div class="space-y-3">
+                    {% for isolate in isolates %}
+                        <div class="collapse collapse-arrow border border-base-300 shadow-xs">
+                            <input type="checkbox" hx-get="/investigations/{{ investigation.id }}/isolate/{{ isolate.id }}" hx-target="#isolate-{{ isolate.id }}-contig-container" hx-swap="outerHTML"/>
+                            <div class="collapse-title font-semibold flex justify-between items-center text-center w-full">
+                                <span>{{ isolate.name }}</span>
+                                <div class="flex gap-2">
+                                    <div class="badge badge-secondary badge-soft">Date: {{ isolate.sampling_date }}</div>
+                                    <div class="badge badge-secondary badge-soft">Location: {{ isolate.sampling_location }}</div>
+                                    <div class="badge badge-primary badge-soft">Contigs: {{ isolate.contig_count }}</div>
+                                    <div class="badge badge-primary badge-soft">Assembly size: {{ isolate.assembly_size|human_bp }}</div>
+                                    <div class="badge badge-primary badge-soft">N50: {{ isolate.n50|human_bp }}</div>
+                                </div>
+                            </div>
+                            <div id="isolate-{{ isolate.id }}-contig-container"></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-base-content/70">No isolates in this investigation</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

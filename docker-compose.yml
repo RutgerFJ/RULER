@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: mlva-redis
+    ports:
+      - "${REDIS_EXTERNAL_PORT:-6380}:${REDIS_INTERNAL_PORT:-6379}"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mlva-network
+    command: redis-server --save "" --appendonly no
+
+  web:
+    build: .
+    container_name: mlva-web
+    working_dir: /app/mlva
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:${WEB_INTERNAL_PORT:-1338}"
+    volumes:
+      - .:/app
+      - /app/.venv
+    ports:
+      - "${WEB_EXTERNAL_PORT:-1337}:${WEB_INTERNAL_PORT:-1338}"
+    environment:
+      - DEBUG=${DEBUG:-True}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_INTERNAL_PORT:-6379}
+      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED:-1}
+      - PYTHONPATH=${PYTHONPATH:-/app}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-mlva.settings}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - mlva-network
+
+  worker:
+    build: .
+    container_name: mlva-worker
+    working_dir: /app/mlva
+    command: python manage.py rqworker default --with-scheduler --worker-ttl 43200
+    environment:
+      - DEBUG=${DEBUG:-True}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_INTERNAL_PORT:-6379}
+      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED:-1}
+      - PYTHONPATH=${PYTHONPATH:-/app}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-mlva.settings}
+      - RQ_WORKER_DEFAULT_TIMEOUT=36000
+      - VERBOSE_OUTPUT=${VERBOSE_OUTPUT:-False}
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/.venv
+    networks:
+      - mlva-network
+
+volumes:
+  redis_data:
+
+networks:
+  mlva-network:
+    driver: bridge

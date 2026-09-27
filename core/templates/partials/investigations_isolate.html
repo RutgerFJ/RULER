@@ -1,0 +1,9 @@
+
+<div class="collapse-content space-y-2">
+{% for contig in contigs %}
+    <div class="text-sm bg-base-200 p-3 rounded">
+        <p class="font-mono text-xs font-semibold mb-1">>{{ contig.fasta_header }}</p>
+        <p class="text-base-content/70">Length: {{ contig.length|default:"N/A" }} bp</p>
+    </div>
+{% endfor %}
+</div>

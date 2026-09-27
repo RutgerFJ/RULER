@@ -1,0 +1,201 @@
+{% if progress %}
+    {% if progress.overall_progress == 100 %}
+        <!-- Out-of-band swap: replace the polling element with results when complete -->
+        <div id="progress-content" hx-swap-oob="outerHTML">
+            <div class="space-y-6">
+                <div class="card bg-base-100 border-[1px] border-base-300 shadow-sm">
+                    <div class="card-body">
+                        
+                        <!-- Tab Navigation -->
+                        <div class="tabs tabs-border mb-6" role="tablist">
+                            <input type="radio" name="mlva_tabs" role="tab" class="tab font-semibold" aria-label="MLVA Profiles" id="tab-profiles" checked="checked"/>
+                            <div role="tabpanel" class="tab-content p-0">
+                                {% include 'partials/mlva_profiles_tab.html' %}
+                            </div>
+
+                            <input type="radio" name="mlva_tabs" role="tab" class="tab font-semibold" aria-label="Distance Matrix" id="tab-matrix" />
+                            <div role="tabpanel" class="tab-content p-0">
+                                {% include 'partials/mlva_pairwise_matrix_tab.html' %}
+                            </div>
+
+                            <input type="radio" name="mlva_tabs" role="tab" class="tab font-semibold" aria-label="Tree View" id="tab-tree" />
+                            <div role="tabpanel" class="tab-content p-0">
+                                {% include 'partials/mlva_tree_view_tab.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+    <div id="progress-content"
+        {% if progress.total_jobs > 0 and progress.overall_progress < 100 %}
+            hx-get="{% url 'mlva_progress' investigation_id=mlva_config.investigation.id mlva_config_id=mlva_config.id %}"
+            hx-trigger="every 5s"
+            hx-swap="outerHTML"
+        {% endif %}
+    >
+    <div class="card bg-base-100 border-[1px] border-base-300 shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title text-xl mb-4">
+                <span>Analysis Progress</span>
+                <div class="badge badge-info">
+                    {% if progress.overall_progress == 100 %}
+                        Completed
+                    {% elif progress.jobs_failed > 0 %}
+                        Failed
+                    {% elif progress.total_jobs == 0 %}
+                        Not Started
+                    {% else %}
+                        Running
+                    {% endif %}
+                </div>
+            </h2>
+        
+            <!-- Overall Progress Section -->
+            <div class="space-y-4">
+                <!-- Stage Information -->
+                {% if progress.stage %}
+                <div>
+                    <p class="text-sm font-semibold mb-1">Current Stage:</p>
+                    <p class="text-base-content/70 capitalize">{{ progress.stage }}</p>
+                    {% if progress.stage_description %}
+                    <p class="text-sm text-base-content/60 mt-1">{{ progress.stage_description }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Overall Progress Bar -->
+                {% if progress.overall_progress is not None %}
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-semibold">Overall Progress</span>
+                        <span class="text-sm font-bold text-primary">{{ progress.overall_progress|default:0 }}%</span>
+                    </div>
+                    <progress class="progress progress-primary w-full" value="{{ progress.overall_progress|default:0 }}" max="100"></progress>
+                </div>
+                {% endif %}
+
+                <!-- Job Statistics -->
+                {% if progress.total_jobs %}
+                <div>
+                    <p class="text-sm font-semibold mb-2">Jobs: {{ progress.jobs_completed }}/{{ progress.total_jobs }} completed</p>
+                    <div class="flex gap-2 flex-wrap">
+                        {% if progress.jobs_in_progress > 0 %}
+                        <div class="badge badge-warning gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-4 h-4 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {{ progress.jobs_in_progress }} in progress
+                        </div>
+                        {% endif %}
+                        {% if progress.jobs_queued > 0 %}
+                        <div class="badge badge-info gap-2 whitespace-nowrap">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-4 h-4 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {{ progress.jobs_queued }} queued
+                        </div>
+                        {% endif %}
+                        {% if progress.jobs_failed > 0 %}
+                        <div class="badge badge-error gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-4 h-4 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2"></path></svg>
+                            {{ progress.jobs_failed }} failed
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Timing Information -->
+                {% if progress.total_jobs > 0 %}
+                <div class="flex justify-between text-sm">
+                    <span class="text-base-content/70">Elapsed Time:</span>
+                    <span class="font-semibold">{{ progress.elapsed_time }}</span>
+                </div>
+                {% if progress.estimated_time_remaining %}
+                <div class="flex justify-between text-sm">
+                    <span class="text-base-content/70">Est. Time Remaining:</span>
+                    <span class="font-semibold">{{ progress.estimated_time_remaining }}</span>
+                </div>
+                {% endif %}
+                {% endif %}
+
+                <!-- Start Analysis Button (when not started) -->
+                {% if progress.total_jobs == 0 %}
+                <div class="flex pt-4">
+                    <form method="post" action="{% url 'start_mlva_analysis' investigation_id=mlva_config.investigation.id mlva_config_id=mlva_config.id %}" style="display: contents;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary" 
+                            hx-post="{% url 'start_mlva_analysis' investigation_id=mlva_config.investigation.id mlva_config_id=mlva_config.id %}"
+                            hx-target="#progress-content"
+                            hx-swap="outerHTML">Start analysis</button>
+                    </form>
+                </div>
+                {% endif %}
+
+                <!-- Messages -->
+                {% if progress.messages %}
+                <div>
+                    <p class="text-sm font-semibold mb-2">Progress Log:</p>
+                    <div class="space-y-2 max-h-48 overflow-y-auto bg-base-200 rounded p-3 text-xs">
+                        {% for message in progress.messages %}
+                        <div class="border-l-2 border-primary pl-2">
+                            <span class="text-base-content/50">{{ message.timestamp|slice:"11:19" }}</span>
+                            <p class="text-base-content/70 mt-0.5">{{ message.message }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Individual Job Details (Collapsible) -->
+                {% if job_details %}
+                <div class="divider my-3"></div>
+                <details class="collapse collapse-arrow border border-base-300 bg-base-100" open>
+                    <summary class="collapse-title text-sm font-semibold cursor-pointer">
+                        Individual Job Details ({{ job_details|length }} jobs)
+                    </summary>
+                    <div class="collapse-content">
+                        <div class="space-y-3 max-h-60 overflow-y-auto">
+                            {% for job in job_details %}
+                            <div class="border border-base-300 rounded p-3 bg-base-100/50">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <p class="text-sm font-semibold">Job #{{ forloop.counter }}</p>
+                                        {% if job.type %}
+                                        <p class="text-xs text-base-content/70">{{ job.type }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="badge {% if job.status == 'completed' %}badge-success{% elif job.status == 'failed' %}badge-error{% elif job.status == 'in_progress' or job.status == 'started' %}badge-warning{% else %}badge-info{% endif %}">
+                                        {{ job.status }}
+                                    </div>
+                                </div>
+                                {% if job.stage %}
+                                <p class="text-xs text-base-content/70 mb-1">Stage: {{ job.stage }}</p>
+                                {% endif %}
+                                {% if job.progress_percentage is not None %}
+                                <progress class="progress progress-primary w-full mb-2" value="{{ job.progress_percentage|default:0 }}" max="100"></progress>
+                                <p class="text-xs text-base-content/70">{{ job.progress_percentage }}%</p>
+                                {% endif %}
+                                {% if job.error_message %}
+                                <p class="text-xs text-error mt-1">Error: {{ job.error_message }}</p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </details>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    </div>
+    {% endif %}
+{% else %}
+<div class="card bg-base-100 border-[1px] border-base-300 shadow-sm">
+    <div class="card-body">
+        <h2 class="card-title text-xl mb-4">Analysis Progress</h2>
+        <div class="text-center py-8">
+            <div class="loading loading-spinner loading-lg text-primary"></div>
+            <p class="mt-4 text-base-content/70">Loading analysis...</p>
+        </div>
+    </div>
+</div>
+{% endif %}
